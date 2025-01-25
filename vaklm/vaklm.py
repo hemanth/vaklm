@@ -112,6 +112,7 @@ def vaklm(
 
     def handle_streaming_response(response: requests.Response) -> Generator[str, None, None]:
         """Handle streaming response from the API"""
+        reasoning_content = ""
         for line in response.iter_lines():
             if line:
                 try:
@@ -121,9 +122,12 @@ def vaklm(
                     if line.startswith(b"data: "):
                         json_str = line[6:].decode('utf-8')
                         data = json.loads(json_str)
-                        content = data.get('choices', [{}])[0].get('delta', {}).get('content')
+                        delta = data.get('choices', [{}])[0].get('delta', {})
+                        content = delta.get('content')
                         if content:
                             yield content
+                        if delta.get('reasoning_content'):
+                            reasoning_content += delta['reasoning_content']
                 except json.JSONDecodeError as e:
                     logger.warning(f"Failed to decode streaming response: {str(e)}")
                 except Exception as e:

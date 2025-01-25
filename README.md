@@ -47,4 +47,7 @@ try:
         print(chunk, end='', flush=True)
 except VAKLMException as e:
     print(f"Error: {str(e)}")
+
+# Note: When streaming, the function also accumulates any reasoning_content
+# from the API response which can be accessed or processed as needed.
 ```
