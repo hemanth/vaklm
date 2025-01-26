@@ -1,6 +1,5 @@
-# VAKLM - Versatile AI Knowledge Language Model
-
-A Python client for interacting with OpenAI-compatible API endpoints with reasoning support.
+# VAKLM
+> A Python client for interacting with OpenAI-compatible API endpoints with reasoning support.
 
 ## Installation
 

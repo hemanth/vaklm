@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='vaklm',
-    version='0.3.0',
+    version='0.3.1',
     packages=find_packages(),
     install_requires=['requests'],
     long_description=long_description,
