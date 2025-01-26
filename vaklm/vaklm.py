@@ -49,7 +49,7 @@ def vaklm(
     max_retries: int = 3,
     retry_delay: float = 1.0,
     **kwargs
-) -> Union[str, Generator[str, None, None]]:
+) -> Union[str, Generator[tuple[str, str], None, None]]:
     """
     Make a request to an OpenAI-compatible endpoint.
     
@@ -110,7 +110,7 @@ def vaklm(
         except Exception as e:
             raise VAKLMException(f"Unexpected error: {str(e)}")
 
-    def handle_streaming_response(response: requests.Response) -> Generator[str, None, None]:
+    def handle_streaming_response(response: requests.Response) -> Generator[tuple[str, str], None, None]:
         """Handle streaming response from the API"""
         reasoning_content = ""
         for line in response.iter_lines():
@@ -123,20 +123,22 @@ def vaklm(
                         json_str = line[6:].decode('utf-8')
                         data = json.loads(json_str)
                         delta = data.get('choices', [{}])[0].get('delta', {})
-                        content = delta.get('content')
-                        if content:
-                            yield content
+                        content = delta.get('content', '')
                         if delta.get('reasoning_content'):
                             reasoning_content += delta['reasoning_content']
+                        yield (content, reasoning_content)
                 except json.JSONDecodeError as e:
                     logger.warning(f"Failed to decode streaming response: {str(e)}")
                 except Exception as e:
                     raise StreamingError(f"Error processing stream: {str(e)}")
 
-    def handle_complete_response(response: requests.Response) -> str:
+    def handle_complete_response(response: requests.Response) -> tuple[str, str]:
         """Handle complete (non-streaming) response from the API"""
         data = response.json()
-        return data.get('choices', [{}])[0].get('message', {}).get('content', '')
+        choice = data.get('choices', [{}])[0]
+        message = choice.get('message', {})
+        reasoning = choice.get('reasoning', '')
+        return (message.get('content', ''), reasoning)
 
     # Make request with retry logic
     endpoint = endpoint.rstrip('/')
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 
     print("\nStreaming example:")
     try:
-        for chunk in vaklm(
+        for content, reasoning in vaklm(
             endpoint="http://localhost:11434/v1/chat/completions",
             model_name="llama3.2:latest",
             user_prompt="Write a short story about a cat.",
@@ -191,6 +193,8 @@ if __name__ == '__main__':
             stream=True,
             temperature=0.7
         ):
-            print(chunk, end='', flush=True)
+            print(content, end='', flush=True)
+            if reasoning:
+                print(f"\n[Reasoning: {reasoning}]")
     except VAKLMException as e:
         print(f"Error: {str(e)}")
