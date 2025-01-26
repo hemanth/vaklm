@@ -136,9 +136,12 @@ def vaklm(
         """Handle complete (non-streaming) response from the API"""
         data = response.json()
         choice = data.get('choices', [{}])[0]
+        # Try delta first, fall back to message if delta is empty
+        delta = choice.get('delta', {})
         message = choice.get('message', {})
-        reasoning = choice.get('reasoning', '')
-        return (message.get('content', ''), reasoning)
+        content = delta.get('content', message.get('content', ''))
+        reasoning_content = delta.get('reasoning_content', message.get('reasoning_content', ''))
+        return (content, reasoning_content)
 
     # Make request with retry logic
     endpoint = endpoint.rstrip('/')
