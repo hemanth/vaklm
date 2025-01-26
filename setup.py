@@ -5,12 +5,12 @@ with open("README.md", "r") as fh:
 
 setup(
     name='vaklm',
-    version='0.3.1',
+    version='0.3.2',
     packages=find_packages(),
     install_requires=['requests'],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/hemamth/vaklm",  # Replace with your actual repo URL
+    url="https://github.com/hemanth/vaklm",  # Replace with your actual repo URL
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
